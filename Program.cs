@@ -1,21 +1,20 @@
-﻿using HttpClient httpClient = new HttpClient();
-try
+﻿using POCSemaninhaConsciente;
+using System.Text.Json;
+
+internal class Program
 {
-    // Make GET request
-    HttpResponseMessage response = await httpClient.GetAsync("https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=palio_do_mal&api_key=681b18bb53abc9da1ba5d84252cd6aac&format=json");
+    private static async Task Main(string[] args)
+    {
+        string baseDirectory = AppContext.BaseDirectory;
+        string projectRoot = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\"));
+        string configPath = Path.Combine(projectRoot, "appsettings.json");
+        var config = JsonSerializer.Deserialize<Config>(File.ReadAllText(configPath));
 
-    // Ensure success status code
-    response.EnsureSuccessStatusCode();
+        string apiKey = config?.ApiKey ?? throw new Exception("Api Key não informada");
+        Console.WriteLine("Para qual usuário será analisado o LastFM?");
+        string user = Console.ReadLine();
 
-    // Read response content
-    string responseBody = await response.Content.ReadAsStringAsync();
-
-    Console.WriteLine("Response:");
-    Console.WriteLine(responseBody);
+        var integrador = new LastFmIntegrator(user,apiKey);
+        await integrador.ObterMusicasMaisOuvidas();
+    }
 }
-catch (Exception)
-{
-
-	throw;
-}
-Console.WriteLine("Hello, World!");
